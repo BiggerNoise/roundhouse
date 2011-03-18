@@ -11,6 +11,21 @@ namespace roundhouse.runners
     using resolvers;
     using Environment = environments.Environment;
 
+    public class ScriptInformation
+    {
+        public MigrationsFolder Folder { get; internal set; }
+        public bool HasRun { get; internal set; }
+        public bool HasChanged { get; internal set; }
+        public string ScriptPath { get; internal set; }
+    }
+    public interface IWalker
+    {
+        KnownFolders KnownFolders { get; }
+        void TraverseFiles(Action<ScriptInformation> scriptAction);
+        bool RunScript(ScriptInformation script);
+        bool RecordScriptAsRun(ScriptInformation script);
+
+    }
     public sealed class RoundhouseMigrationRunner : IRunner
     {
         private readonly string repository_path;
