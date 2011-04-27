@@ -45,5 +45,6 @@ namespace visual.roundhouse.ViewModels
             get { return _connection.ConnectionString; }
             set { _connection.ConnectionString = value; }
         }
+
     }
 }

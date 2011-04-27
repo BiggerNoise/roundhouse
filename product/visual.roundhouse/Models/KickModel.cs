@@ -92,8 +92,8 @@ namespace visual.roundhouse.Models
         private List<ScriptInformation> ReloadScriptInformation()
         {
             List<ScriptInformation> result  = new List<ScriptInformation>();
-            IWalker walker = ObjectFactory.GetInstance<IWalker>();
-            walker.TraverseFiles( result.Add );
+            //IWalker walker = ObjectFactory.GetInstance<IWalker>();
+            //walker.TraverseFiles( result.Add );
             return result;
         }
     }

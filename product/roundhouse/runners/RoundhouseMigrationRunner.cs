@@ -26,7 +26,7 @@ namespace roundhouse.runners
         bool RecordScriptAsRun(ScriptInformation script);
 
     }
-    public sealed class RoundhouseMigrationRunner : IRunner
+    public sealed class RoundhouseMigrationRunner : IRunner, IWalker
     {
         private readonly string repository_path;
         private readonly Environment environment;
@@ -283,5 +283,54 @@ namespace roundhouse.runners
 
         }
 
+
+        #region IWalker Members
+
+        public KnownFolders KnownFolders
+        {
+            get { return known_folders; }
+        }
+//        public void traverse_files_and_run_sql(string directory, long version_id, MigrationsFolder migration_folder, Environment migrating_environment, string repository_version)
+
+        public void TraverseFiles(Action<ScriptInformation> scriptAction)
+        {
+            string new_version = version_resolver.resolve_version();
+            long version_id = database_migrator.version_the_database(repository_path, new_version);
+            TraverseFiles(scriptAction, known_folders.up.folder_full_path, known_folders.up);
+            TraverseFiles(scriptAction, known_folders.run_first_after_up.folder_full_path, known_folders.run_first_after_up);
+            TraverseFiles(scriptAction, known_folders.functions.folder_full_path, known_folders.functions);
+            TraverseFiles(scriptAction, known_folders.views.folder_full_path, known_folders.views);
+            TraverseFiles(scriptAction, known_folders.sprocs.folder_full_path, known_folders.sprocs);
+            TraverseFiles(scriptAction, known_folders.permissions.folder_full_path, known_folders.permissions);
+        }
+        private void TraverseFiles(Action<ScriptInformation> scriptAction, string directory, MigrationsFolder migration_folder)
+        {
+            foreach (string sql_file in file_system.get_all_file_name_strings_in(directory, SQL_EXTENSION))
+            {
+                if (!file_system.directory_exists(directory))
+                    return;
+
+                string sql_file_text = File.ReadAllText(sql_file);
+                scriptAction(database_migrator.GetScriptInformation(sql_file_text,
+                                                                    file_system.get_file_name_from(sql_file),
+                                                                    migration_folder));
+            }
+            foreach (string child_directory in file_system.get_all_directory_name_strings_in(directory))
+            {
+                TraverseFiles(scriptAction, child_directory, migration_folder);
+            }
+        }
+
+        public bool RunScript(ScriptInformation script)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool RecordScriptAsRun(ScriptInformation script)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

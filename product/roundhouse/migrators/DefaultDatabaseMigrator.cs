@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using roundhouse.folders;
+using roundhouse.runners;
 
 namespace roundhouse.migrators
 {
@@ -190,6 +192,20 @@ namespace roundhouse.migrators
             }
 
             return this_sql_ran;
+        }
+
+        public ScriptInformation GetScriptInformation(string sql_to_run, string script_name, MigrationsFolder folder)
+        {
+            ScriptInformation information = new ScriptInformation
+                                                {
+                                                    Folder = folder, 
+                                                    ScriptPath = script_name,
+                                                    HasRun = this_script_has_run_already(script_name),
+                                                };
+            information.HasChanged = information.HasRun &&
+                                     this_script_has_changed_since_last_run(script_name, sql_to_run);
+
+            return information;
         }
 
         public IEnumerable<string> get_statements_to_run(string sql_to_run)
